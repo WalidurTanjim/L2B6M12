@@ -176,6 +176,39 @@ app.delete("/users/:id", async(req: Request, res: Response) => {
      }
 })
 
+// UPDATE method
+app.put("/users/:id", async(req: Request, res: Response) => {
+     const { id } = req?.params;
+     const { name, email } = await req?.body;
+
+     try{
+          const result = await pool.query(`UPDATE users SET name=$1, email=$2 WHERE id=$3 RETURNING *`, [name, email, id]);
+
+          if(result?.rowCount === 0){
+               res.status(404).json({
+                    success: false,
+                    message: "User not found",
+                    data: result?.rows
+               });
+          }else{
+               res.status(200).json({
+                    success: true,
+                    message: "User updated successfully",
+                    data: result?.rows[0]
+               });
+          }
+     }catch(err: any) {
+          console.error(err);
+          console.error(err?.message);
+
+          res.status(500).json({
+               success: false,
+               message: err?.message,
+               data: null
+          });
+     }
+})
+
 app.listen(port, () => {
      console.log(`Express Server listening on port ${port}`);
 });
