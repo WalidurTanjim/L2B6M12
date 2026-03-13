@@ -244,6 +244,28 @@ app.post("/todos", async(req: Request, res: Response) => {
      }
 })
 
+// GET method
+app.get("/todos", async(req: Request, res: Response) => {
+     try{
+          const result = await pool.query(`SELECT * FROM todos`);
+
+          res.status(200).json({
+               success: true,
+               message: "Todos fetched successfully",
+               data: result?.rows
+          });
+     }catch(err: any) {
+          console.error(err);
+          console.error(err?.message);
+
+          res.status(500).json({
+               success: false,
+               message: "Something went wrong!",
+               data: null
+          });
+     }
+})
+
 app.listen(port, () => {
      console.log(`Express Server listening on port ${port}`);
 });
