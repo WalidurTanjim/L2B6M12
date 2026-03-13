@@ -58,6 +58,7 @@ initDB();
 app.use(express.json());
 // app.use(express.urlencoded());     // form-data
 
+// ===== users =====
 // POST methods
 app.post("/users", async(req: Request, res: Response) => {
      const { name, email } = await req?.body;
@@ -197,6 +198,40 @@ app.put("/users/:id", async(req: Request, res: Response) => {
                     data: result?.rows[0]
                });
           }
+     }catch(err: any) {
+          console.error(err);
+          console.error(err?.message);
+
+          res.status(500).json({
+               success: false,
+               message: err?.message,
+               data: null
+          });
+     }
+})
+
+
+// ===== todos =====
+// POST method
+app.post("/todos", async(req: Request, res: Response) => {
+     const { user_id, title } = await req?.body;
+
+     if(!user_id || !title){
+          return res.status(400).json({
+               success: false,
+               message: "user_id & title is required",
+               data: null
+          });
+     };
+
+     try{
+          const result = await pool.query(`INSERT INTO todos(user_id, title) VALUES($1, $2) RETURNING *`, [user_id, title]);
+
+          res.status(201).json({
+               success: true,
+               message: "Todo inserted successfully",
+               data: result?.rows[0]
+          });
      }catch(err: any) {
           console.error(err);
           console.error(err?.message);
