@@ -84,8 +84,33 @@ app.post("/users", async(req: Request, res: Response) => {
 })
 
 // GET methods
-app.get("/", (req: Request, res: Response) => {
-     res.send("Welcome to Next Level Development.");
+app.get("/users", async(req: Request, res: Response) => {
+     try{
+          const result = await pool.query(`SELECT * FROM users`);
+
+          if(result?.rows.length > 0){
+               res.status(200).json({
+                    success: true,
+                    message: "All users retrived successfully",
+                    data: result?.rows
+               })
+          }else{
+               res.status(200).json({
+                    success: true,
+                    message: "No users available",
+                    data: result?.rows
+               })
+          }
+     }catch(err: any){
+          console.error(err);
+          console.error(err?.message);
+
+          res.status(500).json({
+               success: false,
+               message: err?.message,
+               data: null
+          })
+     }
 })
 
 app.listen(port, () => {
