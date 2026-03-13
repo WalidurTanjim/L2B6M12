@@ -39,10 +39,10 @@ const initDB = async() => {
                `);
 
           await pool.query("COMMIT");
-     }catch(err){
+     }catch(err: any){
           await pool.query("ROLLBACK");
-          
-          console.error(err);
+
+          console.error(err?.message);
           console.error("Database not initialize");
      }
 }
@@ -52,6 +52,31 @@ initDB();
 // parser
 app.use(express.json());
 // app.use(express.urlencoded());     // form-data
+
+// POST methods
+app.post("/users", async(req: Request, res: Response) => {
+     const { name, email } = await req?.body;
+
+     try{
+          const result = await pool.query(`INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`, [name, email]);
+
+          if(result?.rows.length > 0){
+               res.status(201).json({
+                    success: true,
+                    message: "Data inserted successfully",
+                    data: result?.rows[0]
+               });
+          }
+     }catch(err: any){
+          console.error(err?.message);
+
+          res.status(500).json({
+               success: false, 
+               message: "Failed to insert. Try again.",
+               data: null
+          });
+     }
+})
 
 // GET methods
 app.get("/", (req: Request, res: Response) => {
