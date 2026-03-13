@@ -341,6 +341,55 @@ app.delete("/todos/:id", async(req: Request, res: Response) => {
      }
 })
 
+// UPDATE method
+app.put("/todos/:id", async(req: Request, res: Response) => {
+     const { id } = req?.params;
+     const { user_id, title } = await req?.body;
+
+     if(!id){
+          return res.status(400).json({
+               success: false,
+               message: "Valid id is required",
+               data: null
+          });
+     }
+
+     if(!user_id || !title){
+          return res.status(400).json({
+               success: false,
+               message: "User Id & Title is required",
+               data: null
+          });
+     }
+
+     try{
+          const result = await pool.query(`UPDATE todos SET user_id=$1, title=$2 WHERE id=$3 RETURNING *`, [user_id, title, id]);
+
+          if(result?.rows.length === 0){
+               res.status(404).json({
+                    success: false,
+                    message: "Todo not found!",
+                    data: null
+               });
+          }else{
+               res.status(201).json({
+                    success: true,
+                    message: "Todo updated successfully by id",
+                    data: result?.rows[0]
+               });
+          }
+     }catch(err: any) {
+          console.error(err);
+          console.error(err?.message);
+
+          res.status(500).json({
+               success: false,
+               message: "Something went wrong!",
+               data: null
+          });
+     }
+})
+
 app.listen(port, () => {
      console.log(`Express Server listening on port ${port}`);
 });
