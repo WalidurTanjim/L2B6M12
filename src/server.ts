@@ -95,8 +95,8 @@ app.get("/users", async(req: Request, res: Response) => {
                     data: result?.rows
                })
           }else{
-               res.status(200).json({
-                    success: true,
+               res.status(500).json({
+                    success: false,
                     message: "No users available",
                     data: result?.rows
                })
@@ -110,6 +110,37 @@ app.get("/users", async(req: Request, res: Response) => {
                message: err?.message,
                data: null
           })
+     }
+})
+
+app.get("/users/:id", async(req: Request, res: Response) => {
+     const { id } = await req?.params;
+
+     try{
+          const result = await pool.query(`SELECT * FROM users WHERE id=$1`, [id]);
+
+          if(result?.rows.length > 0){
+               res.status(201).json({
+                    success: true, 
+                    message: "User find successfully",
+                    data: result?.rows[0]
+               });
+          }else{
+               res.status(500).json({
+                    success: false,
+                    message: "User not available",
+                    data: result?.rows
+               });
+          }
+     }catch(err: any){
+          console.error(err);
+          console.error(err?.message);
+
+          res.status(500).json({
+               success: false,
+               message: err?.message,
+               data: null
+          });
      }
 })
 
