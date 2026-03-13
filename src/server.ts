@@ -95,7 +95,7 @@ app.get("/users", async(req: Request, res: Response) => {
                     data: result?.rows
                })
           }else{
-               res.status(500).json({
+               res.status(404).json({
                     success: false,
                     message: "No users available",
                     data: result?.rows
@@ -114,7 +114,7 @@ app.get("/users", async(req: Request, res: Response) => {
 })
 
 app.get("/users/:id", async(req: Request, res: Response) => {
-     const { id } = await req?.params;
+     const { id } = req?.params;
 
      try{
           const result = await pool.query(`SELECT * FROM users WHERE id=$1`, [id]);
@@ -126,13 +126,45 @@ app.get("/users/:id", async(req: Request, res: Response) => {
                     data: result?.rows[0]
                });
           }else{
-               res.status(500).json({
+               res.status(404).json({
                     success: false,
                     message: "User not available",
                     data: result?.rows
                });
           }
      }catch(err: any){
+          console.error(err);
+          console.error(err?.message);
+
+          res.status(500).json({
+               success: false,
+               message: err?.message,
+               data: null
+          });
+     }
+})
+
+// DELETE method
+app.delete("/users/:id", async(req: Request, res: Response) => {
+     const { id } = req?.params;
+
+     try{
+          const result = await pool.query(`DELETE FROM users WHERE id=$1 RETURNING *`, [id]);
+
+          if(result?.rowCount === 0){
+               res.status(404).json({
+                    success: false,
+                    message: "User not found. Try again.",
+                    data: result?.rows
+               });
+          }else{
+               res.status(200).json({
+                    success: true,
+                    message: "User deleted successfully",
+                    data: result?.rows
+               });
+          }
+     }catch(err: any) {
           console.error(err);
           console.error(err?.message);
 
